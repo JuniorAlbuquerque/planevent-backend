@@ -24,6 +24,8 @@ namespace Planeventbackend.Models
 
         public string Sex { get; set; }
 
+        public EventModel Events { get; set; }
+
         public ICollection<UserEventModel> UserEventModels { get; set; }
     }
 }

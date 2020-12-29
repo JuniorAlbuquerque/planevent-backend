@@ -28,7 +28,7 @@ namespace Planeventbackend.Models
 
         public int Userid { get; set; }
 
-        public UserModel Users { get; set; }
+        public UserModel User { get; set; }
 
         public ICollection<UserEventModel> UserEventModels { get; set; }
     }

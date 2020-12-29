@@ -35,18 +35,17 @@ namespace Planeventbackend.Migrations
                     Local = table.Column<string>(type: "character varying(150)", maxLength: 150, nullable: false),
                     Date = table.Column<string>(type: "character varying(150)", maxLength: 150, nullable: false),
                     Type = table.Column<string>(type: "character varying(150)", maxLength: 150, nullable: false),
-                    Userid = table.Column<int>(type: "integer", nullable: false),
-                    UsersId = table.Column<int>(type: "integer", nullable: true)
+                    Userid = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Events", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Events_Users_UsersId",
-                        column: x => x.UsersId,
+                        name: "FK_Events_Users_Userid",
+                        column: x => x.Userid,
                         principalTable: "Users",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -74,9 +73,9 @@ namespace Planeventbackend.Migrations
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_Events_UsersId",
+                name: "IX_Events_Userid",
                 table: "Events",
-                column: "UsersId");
+                column: "Userid");
 
             migrationBuilder.CreateIndex(
                 name: "IX_userEvents_Eventid",

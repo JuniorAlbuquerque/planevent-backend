@@ -14,6 +14,7 @@ namespace Planeventbackend.Controllers
     [Route("v1/user")]
     public class UserController : ControllerBase
     {
+        // Get All Users
         [HttpGet]
         [Route("")]
         public async Task<ActionResult<List<UserModel>>>
@@ -23,6 +24,7 @@ namespace Planeventbackend.Controllers
             return users;
         }
 
+        // Create User
         [HttpPost]
         [Route("")]
         public async Task<ActionResult<UserModel>>
@@ -39,6 +41,7 @@ namespace Planeventbackend.Controllers
             }
         }
 
+        // Login User
         [HttpPost]
         [Route("login")]
         public async Task<ActionResult<UserModel>>
@@ -56,5 +59,49 @@ namespace Planeventbackend.Controllers
             return users;
         }
 
+        // Delete User
+        [HttpDelete]
+        [Route("{id:int}")]
+        public async Task<ActionResult>
+        Get([FromServices] DataContext context, int id)
+        {
+            var resevent = await context.events
+               .AsNoTracking()
+               .FirstOrDefaultAsync(x => x.Userid == id);
+
+            context.Entry(resevent).State = EntityState.Deleted;
+            await context.SaveChangesAsync();
+
+            var user = await context.users.FindAsync(id);
+            context.Entry(user).State = EntityState.Deleted;
+            await context.SaveChangesAsync();
+
+            return Ok("Deletado");
+        }
+
+        // Update User
+        [HttpPut]
+        [Route("")]
+        public async Task<ActionResult>
+        Put([FromServices] DataContext context, [FromBody] UserModel model)
+        {
+            if(ModelState.IsValid)
+            {
+                var user = await context.users.FindAsync(model.Id);
+                user.Name = model.Name;
+                user.Email = model.Email;
+                user.Password = model.Password;
+                user.Birthdate = model.Birthdate;
+                user.Sex = model.Sex;
+
+                context.Entry(user).State = EntityState.Modified;
+                await context.SaveChangesAsync();
+
+                return Ok("Atualizado com sucesso");
+            } else
+            {
+                return BadRequest();
+            }
+        }
     }
 }

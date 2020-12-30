@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+﻿using System;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace Planeventbackend.Migrations
@@ -33,7 +34,7 @@ namespace Planeventbackend.Migrations
                     Name = table.Column<string>(type: "character varying(150)", maxLength: 150, nullable: false),
                     Description = table.Column<string>(type: "character varying(150)", maxLength: 150, nullable: false),
                     Local = table.Column<string>(type: "character varying(150)", maxLength: 150, nullable: false),
-                    Date = table.Column<string>(type: "character varying(150)", maxLength: 150, nullable: false),
+                    Date = table.Column<DateTime>(type: "timestamp without time zone", maxLength: 150, nullable: false),
                     Type = table.Column<string>(type: "character varying(150)", maxLength: 150, nullable: false),
                     Userid = table.Column<int>(type: "integer", nullable: false)
                 },
@@ -71,16 +72,6 @@ namespace Planeventbackend.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Events_Userid",
-                table: "Events",
-                column: "Userid");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_userEvents_Eventid",
-                table: "userEvents",
-                column: "Eventid");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)

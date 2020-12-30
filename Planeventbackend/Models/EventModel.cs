@@ -21,7 +21,9 @@ namespace Planeventbackend.Models
         public string Local { get; set; }
 
         [Required(ErrorMessage = "Este campo é obrigatório")]
-        public string Date { get; set; }
+
+        [DisplayFormat(DataFormatString = "{yyyy-MM-dd}", ApplyFormatInEditMode = true)]
+        public DateTime? Date { get; set; }
 
         [Required(ErrorMessage = "Este campo é obrigatório")]
         public string Type { get; set; }

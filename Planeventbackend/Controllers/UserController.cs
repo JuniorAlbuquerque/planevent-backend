@@ -47,16 +47,16 @@ namespace Planeventbackend.Controllers
         public async Task<ActionResult<UserModel>>
         Post([FromServices] DataContext context, [FromBody] UserLogin model)
         {
-            var users = await context.users.FirstOrDefaultAsync(
+            var user = await context.users.FirstOrDefaultAsync(
             u => u.Email == model.Email && u.Password == model.Password
                 );
 
-            if (users == null)
+            if (user == null)
             {
                 return BadRequest();
             }
 
-            return users;
+            return user;
         }
 
         // Delete User
@@ -65,18 +65,17 @@ namespace Planeventbackend.Controllers
         public async Task<ActionResult>
         Get([FromServices] DataContext context, int id)
         {
-            var resevent = await context.events
-               .AsNoTracking()
-               .FirstOrDefaultAsync(x => x.Userid == id);
-
-            context.Entry(resevent).State = EntityState.Deleted;
-            await context.SaveChangesAsync();
-
             var user = await context.users.FindAsync(id);
             context.Entry(user).State = EntityState.Deleted;
             await context.SaveChangesAsync();
 
-            return Ok("Deletado");
+            return Ok(new
+            {
+                success = new
+                {
+                    message = "Usuário excluido"
+                }
+            });
         }
 
         // Update User
@@ -97,7 +96,13 @@ namespace Planeventbackend.Controllers
                 context.Entry(user).State = EntityState.Modified;
                 await context.SaveChangesAsync();
 
-                return Ok("Atualizado com sucesso");
+                return Ok(new
+                {
+                    success = new
+                    {
+                        message = "Dados atualizados com sucesso"
+                    }
+                });
             } else
             {
                 return BadRequest();

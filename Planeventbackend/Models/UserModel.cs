@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace Planeventbackend.Models
@@ -26,6 +27,7 @@ namespace Planeventbackend.Models
 
         public EventModel Events { get; set; }
 
+        [JsonIgnore]
         public ICollection<UserEventModel> UserEventModels { get; set; }
     }
 }

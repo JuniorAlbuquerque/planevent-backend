@@ -24,6 +24,16 @@ namespace Planeventbackend.Controllers
             return users;
         }
 
+        // Get User By Id
+        [HttpGet]
+        [Route("{id:int}")]
+        public async Task<ActionResult<UserModel>>
+        GetById([FromServices] DataContext context, int id)
+        {
+            var user = await context.users.FindAsync(id);
+            return user;
+        }
+
         // Create User
         [HttpPost]
         [Route("")]

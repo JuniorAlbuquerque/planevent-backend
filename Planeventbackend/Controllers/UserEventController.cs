@@ -32,6 +32,21 @@ namespace Planeventbackend.Controllers
 
             if (user != null)
             {
+                var isAssociate = await context.userEvents.FirstOrDefaultAsync(x => 
+                    x.Userid == user.Id && x.Eventid == model.EventId
+                );
+
+                if (isAssociate != null)
+                {
+                    return BadRequest(new
+                    {
+                        error = new
+                        {
+                            message = "Participante já adicionado ao evento"
+                        }
+                    });
+                }
+
                 var insert = new UserEventModel { Userid = user.Id, Eventid = model.EventId };
                 context.userEvents.Add(insert);
                 await context.SaveChangesAsync();
@@ -71,7 +86,7 @@ namespace Planeventbackend.Controllers
                        join c in context.users on b.Userid equals c.Id
                        where c.Id == id
                        where a.Date <= atual
-                       select a).ToListAsync();
+                       select a).OrderBy(x => x.Date).ToListAsync();
 
             return query;
         }

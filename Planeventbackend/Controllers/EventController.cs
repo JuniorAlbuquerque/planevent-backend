@@ -18,9 +18,32 @@ namespace Planeventbackend.Controllers
         [HttpGet]
         [Route("")]
         public async Task<ActionResult<List<EventModel>>>
-        Get([FromServices] DataContext context)
+        GetAll([FromServices] DataContext context)
         {
             var events = await context.events.OrderBy(x => x.Date).ToListAsync();
+            return events;
+        }
+
+        // Get All Events By Name
+        [HttpGet]
+        [Route("byname/{name}")]
+        public async Task<ActionResult<List<EventModel>>>
+        GetByName([FromServices] DataContext context, string name)
+        {
+
+            var events = await context.events.OrderBy(x => x.Date).Where(x => x.Name.ToUpper().Contains(name.ToUpper())).ToListAsync();
+
+            return events;
+        }
+
+        // Get All Events By Date
+        [HttpGet]
+        [Route("bydate/{date}")]
+        public async Task<ActionResult<List<EventModel>>>
+        GetByDate([FromServices] DataContext context, DateTime date)
+        {
+            var events = await context.events.OrderBy(x => x.Date).Where(x => x.Date == date).ToListAsync();
+
             return events;
         }
 
@@ -69,8 +92,15 @@ namespace Planeventbackend.Controllers
 
                     if (query != null)
                     {
-                        return BadRequest("Evento exclusivo na mesma data");
-                    } else
+                        return BadRequest(new
+                        {
+                            error = new
+                            {
+                                message = "Evento exclusivo na mesma data já cadastrado"
+                            }
+                        });
+                    } 
+                    else
                     {
                         context.events.Add(model);
                         await context.SaveChangesAsync();

@@ -10,6 +10,12 @@ using System.Threading.Tasks;
 
 namespace Planeventbackend.Controllers
 {
+    public class Filter
+    {
+        public string Name { get; set; }
+        public DateTime Date { get; set; }
+    }
+
     [ApiController]
     [Route("v1/event")]
     public class EventController : ControllerBase
@@ -24,28 +30,28 @@ namespace Planeventbackend.Controllers
             return events;
         }
 
-        // Get All Events By Name
+        // Search events by Name and Date
         [HttpGet]
-        [Route("byname/{name}")]
+        [Route("filter")]
         public async Task<ActionResult<List<EventModel>>>
-        GetByName([FromServices] DataContext context, string name)
-        {
+        GetByName([FromServices] DataContext context, [FromQuery] Filter model)
+        {   
+            if (model.Name != null)
+            {
+                var events = await context.events.OrderBy(x => x.Date).Where(x => x.Name.ToUpper().Contains(model.Name.ToUpper())).ToListAsync();
 
-            var events = await context.events.OrderBy(x => x.Date).Where(x => x.Name.ToUpper().Contains(name.ToUpper())).ToListAsync();
+                return events;
+            }
+            if (model.Date != null)
+            {
+                var events = await context.events.OrderBy(x => x.Date).Where(x => x.Date == model.Date).ToListAsync();
 
-            return events;
+                return events;
+            }
+
+            return BadRequest(); 
         }
 
-        // Get All Events By Date
-        [HttpGet]
-        [Route("bydate/{date}")]
-        public async Task<ActionResult<List<EventModel>>>
-        GetByDate([FromServices] DataContext context, DateTime date)
-        {
-            var events = await context.events.OrderBy(x => x.Date).Where(x => x.Date == date).ToListAsync();
-
-            return events;
-        }
 
         // Get Event By Id
         [HttpGet]

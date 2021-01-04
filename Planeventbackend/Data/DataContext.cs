@@ -14,11 +14,11 @@ namespace Planeventbackend.Data
             base(options)
         {
         }
-        public DbSet<UserModel> users { get; set; }
+        public DbSet<UserModel> Users { get; set; }
 
-        public DbSet<EventModel> events { get; set; }
+        public DbSet<EventModel> Events { get; set; }
 
-        public DbSet<UserEventModel> userEvents { get; set; }
+        public DbSet<UserEventModel> UserEvents { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

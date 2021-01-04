@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Planeventbackend.Data;
 using Planeventbackend.Models;
+using Planeventbackend.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,44 +15,24 @@ namespace Planeventbackend.Controllers
     {
         public string Name { get; set; }
         public DateTime Date { get; set; }
+
     }
 
     [ApiController]
     [Route("v1/event")]
     public class EventController : ControllerBase
     {
+        public Message message = new Message();
+
         // Get All Events
         [HttpGet]
         [Route("")]
         public async Task<ActionResult<List<EventModel>>>
         GetAll([FromServices] DataContext context)
         {
-            var events = await context.events.OrderBy(x => x.Date).ToListAsync();
+            var events = await context.Events.OrderBy(x => x.Date).ToListAsync();
             return events;
         }
-
-        // Search events by Name and Date
-        [HttpGet]
-        [Route("filter")]
-        public async Task<ActionResult<List<EventModel>>>
-        GetByName([FromServices] DataContext context, [FromQuery] Filter model)
-        {   
-            if (model.Name != null)
-            {
-                var events = await context.events.OrderBy(x => x.Date).Where(x => x.Name.ToUpper().Contains(model.Name.ToUpper())).ToListAsync();
-
-                return events;
-            }
-            if (model.Date != null)
-            {
-                var events = await context.events.OrderBy(x => x.Date).Where(x => x.Date == model.Date).ToListAsync();
-
-                return events;
-            }
-
-            return BadRequest(); 
-        }
-
 
         // Get Event By Id
         [HttpGet]
@@ -59,7 +40,7 @@ namespace Planeventbackend.Controllers
         public async Task<ActionResult<EventModel>>
         GetById([FromServices] DataContext context, int id)
         {
-            var resevent = await context.events
+            var resevent = await context.Events
                 .AsNoTracking()
                 .Include(x => x.UserEventModels)
                 .ThenInclude(t => t.User)
@@ -75,12 +56,35 @@ namespace Planeventbackend.Controllers
         GetByUser([FromServices] DataContext context, int id)
         {
             var events = await context
-                .events
+                .Events
                 .Where(x => x.Userid == id)
                 .ToListAsync(); 
 
             return events;
         }
+
+        // Search events by Name and Date
+        [HttpGet]
+        [Route("filter")]
+        public async Task<ActionResult<List<EventModel>>>
+        GetByName([FromServices] DataContext context, [FromQuery] Filter model)
+        {
+            if (model.Name != null)
+            {
+                var events = await context.Events.OrderBy(x => x.Date).Where(x => x.Name.ToUpper().Contains(model.Name.ToUpper())).ToListAsync();
+
+                return events;
+            }
+            if (model.Date != null)
+            {
+                var events = await context.Events.OrderBy(x => x.Date).Where(x => x.Date == model.Date).ToListAsync();
+
+                return events;
+            }
+
+            return BadRequest();
+        }
+
 
         // Create Event
         [HttpPost]
@@ -92,29 +96,23 @@ namespace Planeventbackend.Controllers
             {
                 if (model.Type == "Exclusivo")
                 {
-                    var query = await context.events.FirstOrDefaultAsync(
+                    var query = await context.Events.FirstOrDefaultAsync(
                         x => x.Date == model.Date && x.Type == "Exclusivo"  
                     );
 
                     if (query != null)
                     {
-                        return BadRequest(new
-                        {
-                            error = new
-                            {
-                                message = "Evento exclusivo na mesma data já cadastrado"
-                            }
-                        });
+                        return BadRequest(message.GetMessage("Error", "Evento exclusivo na mesma data já cadastrado"));
                     } 
                     else
                     {
-                        context.events.Add(model);
+                        context.Events.Add(model);
                         await context.SaveChangesAsync();
                         return model;
                     }
                 } else
                 {
-                    context.events.Add(model);
+                    context.Events.Add(model);
                     await context.SaveChangesAsync();
                     return model;
                 }
@@ -131,17 +129,11 @@ namespace Planeventbackend.Controllers
         public async Task<ActionResult>
         GetDelete([FromServices] DataContext context, int id)
         {
-            var resevent = await context.events.FindAsync(id);
+            var resevent = await context.Events.FindAsync(id);
             context.Entry(resevent).State = EntityState.Deleted;
             await context.SaveChangesAsync();
 
-            return Ok(new
-            {
-                success = new
-                {
-                    message = "Evento excluido"
-                }
-            });
+            return Ok(message.GetMessage("Success", "Evento excluido"));
         }
 
         // Update Event
@@ -152,7 +144,7 @@ namespace Planeventbackend.Controllers
         {
             if (ModelState.IsValid)
             {
-                var ev = await context.events.FindAsync(model.Id);
+                var ev = await context.Events.FindAsync(model.Id);
                 ev.Name = model.Name;
                 ev.Description = model.Description;
                 ev.Date = model.Date;
@@ -162,13 +154,7 @@ namespace Planeventbackend.Controllers
                 context.Entry(ev).State = EntityState.Modified;
                 await context.SaveChangesAsync();
 
-                return Ok(new
-                {
-                    success = new
-                    {
-                        message = "Dados atualizados com sucesso"
-                    }
-                });
+                return Ok(message.GetMessage("Success", "Dados atualizados com sucesso"));
             }
             else
             {

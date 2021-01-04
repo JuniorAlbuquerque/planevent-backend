@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Planeventbackend.Data;
 using Planeventbackend.Models;
+using Planeventbackend.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,13 +15,15 @@ namespace Planeventbackend.Controllers
     [Route("v1/user")]
     public class UserController : ControllerBase
     {
+        public Message message = new Message();
+
         // Get All Users
         [HttpGet]
         [Route("")]
         public async Task<ActionResult<List<UserModel>>>
         Get([FromServices] DataContext context)
         {
-            var users = await context.users.ToListAsync();
+            var users = await context.Users.ToListAsync();
             return users;
         }
 
@@ -30,7 +33,7 @@ namespace Planeventbackend.Controllers
         public async Task<ActionResult<UserModel>>
         GetById([FromServices] DataContext context, int id)
         {
-            var user = await context.users.FindAsync(id);
+            var user = await context.Users.FindAsync(id);
             return user;
         }
 
@@ -42,7 +45,7 @@ namespace Planeventbackend.Controllers
         {
             if(ModelState.IsValid)
             {
-                context.users.Add(model);
+                context.Users.Add(model);
                 await context.SaveChangesAsync();
                 return model;
             } else
@@ -57,7 +60,7 @@ namespace Planeventbackend.Controllers
         public async Task<ActionResult<UserModel>>
         Post([FromServices] DataContext context, [FromBody] UserLogin model)
         {
-            var user = await context.users.FirstOrDefaultAsync(
+            var user = await context.Users.FirstOrDefaultAsync(
             u => u.Email == model.Email && u.Password == model.Password
                 );
 
@@ -75,17 +78,11 @@ namespace Planeventbackend.Controllers
         public async Task<ActionResult>
         Get([FromServices] DataContext context, int id)
         {
-            var user = await context.users.FindAsync(id);
+            var user = await context.Users.FindAsync(id);
             context.Entry(user).State = EntityState.Deleted;
             await context.SaveChangesAsync();
 
-            return Ok(new
-            {
-                success = new
-                {
-                    message = "Usuário excluido"
-                }
-            });
+            return Ok(message.GetMessage("Success", "Usuário excluido"));
         }
 
         // Update User
@@ -96,7 +93,7 @@ namespace Planeventbackend.Controllers
         {
             if(ModelState.IsValid)
             {
-                var user = await context.users.FindAsync(model.Id);
+                var user = await context.Users.FindAsync(model.Id);
                 user.Name = model.Name;
                 user.Email = model.Email;
                 user.Password = model.Password;
@@ -106,13 +103,7 @@ namespace Planeventbackend.Controllers
                 context.Entry(user).State = EntityState.Modified;
                 await context.SaveChangesAsync();
 
-                return Ok(new
-                {
-                    success = new
-                    {
-                        message = "Dados atualizados com sucesso"
-                    }
-                });
+                return Ok(message.GetMessage("Success", "Dados atualizados com sucesso"));
             } else
             {
                 return BadRequest();

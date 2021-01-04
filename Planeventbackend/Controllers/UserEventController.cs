@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Planeventbackend.Data;
 using Planeventbackend.Models;
+using Planeventbackend.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,59 +17,44 @@ namespace Planeventbackend.Controllers
         public int EventId { get; set; }
     }
 
+
     [ApiController]
     [Route("v1/userevent")]
     public class UserEventController : ControllerBase
     {
+        public Message message = new Message();
+
         // Associate user to event
         [HttpPost]
         [Route("associate")]
         public async Task<ActionResult<UserEventModel>>
         Post([FromServices] DataContext context, [FromBody] Associate model )
         {
-            var user = await context.users.FirstOrDefaultAsync(
+            var user = await context.Users.FirstOrDefaultAsync(
                 x => x.Email == model.Email 
             );
 
             if (user != null)
             {
-                var isAssociate = await context.userEvents.FirstOrDefaultAsync(x => 
+                var isAssociate = await context.UserEvents.FirstOrDefaultAsync(x => 
                     x.Userid == user.Id && x.Eventid == model.EventId
                 );
 
                 if (isAssociate != null)
                 {
-                    return BadRequest(new
-                    {
-                        error = new
-                        {
-                            message = "Participante já adicionado ao evento"
-                        }
-                    });
+                    return BadRequest(message.GetMessage("Error", "Participante já adicionado ao evento"));
                 }
 
                 var insert = new UserEventModel { Userid = user.Id, Eventid = model.EventId };
-                context.userEvents.Add(insert);
+                context.UserEvents.Add(insert);
                 await context.SaveChangesAsync();
 
-                return Ok(new
-                {
-                    success = new
-                    {
-                        message = "Participante adicionado ao evento"
-                    }
-                });
+                return Ok(message.GetMessage("Success", "Participante adicionado ao evento"));
             }
 
             else
             {
-                return BadRequest(new
-                {
-                    error = new
-                    {
-                        message = "Participante não encontrado"
-                    }
-                });
+                return BadRequest(message.GetMessage("Error", "Participante não encontrado"));
             }
         }
 
@@ -81,9 +67,9 @@ namespace Planeventbackend.Controllers
             var atual = DateTime.Now.Date;
 
             var query =
-                await (from a in context.events
-                       join b in context.userEvents on a.Id equals b.Eventid
-                       join c in context.users on b.Userid equals c.Id
+                await (from a in context.Events
+                       join b in context.UserEvents on a.Id equals b.Eventid
+                       join c in context.Users on b.Userid equals c.Id
                        where c.Id == id
                        where a.Date <= atual
                        select a).OrderBy(x => x.Date).ToListAsync();
@@ -100,11 +86,11 @@ namespace Planeventbackend.Controllers
             var atual = DateTime.Now.Date;
 
             var query =
-                await (from a in context.events
-                       join b in context.userEvents on a.Id equals b.Eventid
-                       join c in context.users on b.Userid equals c.Id
+                await (from a in context.Events
+                       join b in context.UserEvents on a.Id equals b.Eventid
+                       join c in context.Users on b.Userid equals c.Id
                        where c.Id == id
-                       where a.Date >= atual
+                       where a.Date > atual
                        select a).ToListAsync();
 
             return query;
